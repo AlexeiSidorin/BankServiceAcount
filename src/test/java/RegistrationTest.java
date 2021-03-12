@@ -1,10 +1,11 @@
-import com.codeborne.selenide.Selectors;
+
+import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.Locale;
 
-import static com.codeborne.selenide.Condition.exist;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selectors.withText;
@@ -12,27 +13,32 @@ import static com.codeborne.selenide.Selenide.*;
 
 public class RegistrationTest {
 
-    RegistrationDto activeUser;
+    RegistrationDto user;
+    Faker faker;
 
     @BeforeEach
     void Setup() {
         open("http://localhost:9999");
+        faker = new Faker(new Locale("eng"));
+        user = new RegistrationDto();
 
     }
 
 
     @Test
     void shouldActiveUser() {
-        $("[type='text']").setValue(AuthTest.setActiveUser().getLogin());
-        $("[type='password']").setValue(AuthTest.setActiveUser().getPassword());
+        AuthTest.setActiveUser();
+        $("[type='text']").setValue(user.getLogin());
+        $("[type='password']").setValue(user.getPassword());
         $(".button__text").click();
         $(withText("Личный кабинет")).shouldBe(visible, Duration.ofSeconds(15));
     }
 
     @Test
     void shouldBlockedUser() {
-        $("[type='text']").setValue(AuthTest.setBlockedUser().getLogin());
-        $("[type='password']").setValue(AuthTest.setBlockedUser().getPassword());
+        AuthTest.setBlockedUser();
+        $("[type='text']").setValue(user.getLogin());
+        $("[type='password']").setValue(user.getPassword());
         $(byText("Продолжить")).click();
         $(withText("Ошибка")).shouldBe(visible);
 
@@ -40,8 +46,9 @@ public class RegistrationTest {
 
     @Test
     void shouldIncorrectPassword() {
-        $("[type='text']").setValue(AuthTest.setIncorrectPassword().getLogin());
-        $("[type='password']").setValue(AuthTest.setIncorrectPassword().getPassword());
+        AuthTest.setIncorrectPassword();
+        $("[type='text']").setValue(user.getLogin());
+        $("[type='password']").setValue(faker.internet().password());
         $(byText("Продолжить")).click();
         $(withText("Ошибка")).shouldBe(visible);
 
@@ -49,8 +56,9 @@ public class RegistrationTest {
 
     @Test
     void shouldIncorrectLogin() {
-        $("[type='text']").setValue(AuthTest.setIncorrectLogin().getLogin());
-        $("[type='password']").setValue(AuthTest.setIncorrectLogin().getPassword());
+        AuthTest.setIncorrectLogin();
+        $("[type='text']").setValue(faker.name().fullName());
+        $("[type='password']").setValue(user.getPassword());
         $(byText("Продолжить")).click();
        $(withText("Ошибка")).shouldBe(visible, Duration.ofSeconds(4));
 
