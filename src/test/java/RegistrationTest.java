@@ -1,69 +1,63 @@
 
 import com.github.javafaker.Faker;
+import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.Locale;
 
-import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selectors.withText;
 import static com.codeborne.selenide.Selenide.*;
 
 public class RegistrationTest {
 
-    RegistrationDto user;
-    Faker faker;
 
     @BeforeEach
     void Setup() {
         open("http://localhost:9999");
-        faker = new Faker(new Locale("eng"));
-        user = new RegistrationDto();
-
     }
 
 
     @Test
-    void shouldActiveUser() {
-        AuthTest.setActiveUser();
-        $("[type='text']").setValue(user.getLogin());
-        $("[type='password']").setValue(user.getPassword());
+    void shouldSuccessLogin() {
+        val validUser = DataGenerator.getRegisteredUser("active");
+        $("[type='text']").setValue(validUser.getLogin());
+        $("[type='password']").setValue(validUser.getPassword());
         $(".button__text").click();
-        $(withText("Личный кабинет")).shouldBe(visible, Duration.ofSeconds(15));
+        $(withText("Личный кабинет")).shouldBe(visible);
     }
 
     @Test
-    void shouldBlockedUser() {
-        AuthTest.setBlockedUser();
-        $("[type='text']").setValue(user.getLogin());
-        $("[type='password']").setValue(user.getPassword());
-        $(byText("Продолжить")).click();
-        $(withText("Ошибка")).shouldBe(visible);
-
+     void shouldReturnMessageUserBlocked() {
+        val invalidUser = DataGenerator.getUserBlocked("blocked");
+        $("[type='text']").setValue(invalidUser.getLogin());
+        $("[type='password']").setValue(invalidUser.getPassword());
+        $(".button__text").click();
+        $(withText("Пользователь заблокирован")).shouldBe(visible);
     }
 
     @Test
-    void shouldIncorrectPassword() {
-        AuthTest.setIncorrectPassword();
-        $("[type='text']").setValue(user.getLogin());
-        $("[type='password']").setValue(faker.internet().password());
+    void shouldGetErrorIfIncorrectPassword() {
+        val wrongPassUser = DataGenerator.getWrongPasswordUser();
+        $("[type='text']").setValue(wrongPassUser.getLogin());
+        $("[type='password']").setValue(wrongPassUser.getPassword());
         $(byText("Продолжить")).click();
-        $(withText("Ошибка")).shouldBe(visible);
-
+        $("[data-test-id='error-notification'] .notification__content")
+                .shouldBe(visible).shouldHave(text("Неверно указан логин или пароль"));
     }
 
     @Test
-    void shouldIncorrectLogin() {
-        AuthTest.setIncorrectLogin();
-        $("[type='text']").setValue(faker.name().fullName());
-        $("[type='password']").setValue(user.getPassword());
+    void shouldGetErrorIfIncorrectLogin() {
+        val wrongLoginUser = DataGenerator.getWrongLoginUser();
+        $("[type='text']").setValue(wrongLoginUser.getLogin());
+        $("[type='password']").setValue(wrongLoginUser.getPassword());
         $(byText("Продолжить")).click();
-       $(withText("Ошибка")).shouldBe(visible, Duration.ofSeconds(4));
-
+        $("[data-test-id='error-notification'] .notification__content")
+                .shouldBe(visible).shouldHave(text("Неверно указан логин или пароль"));
     }
-
 
 
 }

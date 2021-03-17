@@ -1,34 +1,19 @@
 
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 
 import java.io.Serializable;
 
 @Data
+@Value
+@RequiredArgsConstructor
 public class RegistrationDto implements Serializable {
 
-    private String login = "vasya";
-    private String password = "password";
-    private String status;
+    String login;
+    String password;
+    String status;
 
-
-    public RegistrationDto() {
-
-    }
-
-    public RegistrationDto(String login, String password, String status) {
-        this.login = login;
-        this.password = password;
-        this.status = status;
-    }
-
-
-    public String getLogin() {
-        return login;
-    }
-
-    public String getPassword() {
-        return password;
-    }
 
 }
